@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ReSharper disable All
 public class AnimationAndMovementController : MonoBehaviour
 {
     private Animator _animator;
@@ -18,7 +17,6 @@ public class AnimationAndMovementController : MonoBehaviour
     private float _rotationFactorPerFrame = 1.0f;
     private float _runMultiplier = 3f;
 
-    [SuppressMessage("ReSharper", "ComplexConditionExpression")]
     private void Awake()
     {
         _playerInput = new PlayerInput();
