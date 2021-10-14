@@ -42,6 +42,7 @@ public class AnimationAndMovementController : MonoBehaviour
     {
         HandleRotation();
         HandleAnimation();
+        HandleGravity();
 
         if (_isRunPressed)
         {
@@ -104,6 +105,21 @@ public class AnimationAndMovementController : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
             transform.rotation = Quaternion.Slerp(currentRotation, targetRotation, _rotationFactorPerFrame);
+        }
+    }
+
+    private void HandleGravity()
+    {
+        if (_characterController.isGrounded)
+        {
+            float groundedGravity = -0.5f;
+            _currentMovement.y = groundedGravity;
+            _currentRunMovement.y = groundedGravity;
+        } else if (_characterController.isGrounded == false)
+        {
+            float gravity = -9.8f;
+            _currentMovement.y += gravity;
+            _currentRunMovement.y += gravity;
         }
     }
 
