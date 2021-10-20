@@ -5,17 +5,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
-using Object = UnityEngine.Object;
 
-public class PlayerInput : IInputActionCollection, IDisposable
+public class @PlayerInput : IInputActionCollection, IDisposable
 {
-    // CharacterControls
-    private readonly InputActionMap m_CharacterControls;
-    private readonly InputAction m_CharacterControls_Move;
-    private readonly InputAction m_CharacterControls_Run;
-    private ICharacterControlsActions m_CharacterControlsActionsCallbackInterface;
-
-    public PlayerInput()
+    public InputActionAsset asset { get; }
+    public @PlayerInput()
     {
         asset = InputActionAsset.FromJson(@"{
     ""name"": ""PlayerInput"",
@@ -36,6 +30,14 @@ public class PlayerInput : IInputActionCollection, IDisposable
                     ""name"": ""Run"",
                     ""type"": ""Button"",
                     ""id"": ""03e49d8c-d0d4-4817-8cac-ceb5f510d285"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": ""NormalizeVector2"",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Jump"",
+                    ""type"": ""Button"",
+                    ""id"": ""1491a44b-4843-4fef-aecc-8b113df5f07e"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": ""NormalizeVector2"",
                     ""interactions"": """"
@@ -129,6 +131,28 @@ public class PlayerInput : IInputActionCollection, IDisposable
                     ""action"": ""Run"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""66f3c51d-4d04-4b6f-bd16-e8b9a4ca3d76"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""40138c6b-c681-488d-a44b-05209076f88d"",
+                    ""path"": ""<XInputController>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -136,17 +160,15 @@ public class PlayerInput : IInputActionCollection, IDisposable
     ""controlSchemes"": []
 }");
         // CharacterControls
-        m_CharacterControls = asset.FindActionMap("CharacterControls", true);
-        m_CharacterControls_Move = m_CharacterControls.FindAction("Move", true);
-        m_CharacterControls_Run = m_CharacterControls.FindAction("Run", true);
+        m_CharacterControls = asset.FindActionMap("CharacterControls", throwIfNotFound: true);
+        m_CharacterControls_Move = m_CharacterControls.FindAction("Move", throwIfNotFound: true);
+        m_CharacterControls_Run = m_CharacterControls.FindAction("Run", throwIfNotFound: true);
+        m_CharacterControls_Jump = m_CharacterControls.FindAction("Jump", throwIfNotFound: true);
     }
-
-    public InputActionAsset asset { get; }
-    public CharacterControlsActions CharacterControls => new CharacterControlsActions(this);
 
     public void Dispose()
     {
-        Object.Destroy(asset);
+        UnityEngine.Object.Destroy(asset);
     }
 
     public InputBinding? bindingMask
@@ -188,68 +210,58 @@ public class PlayerInput : IInputActionCollection, IDisposable
         asset.Disable();
     }
 
+    // CharacterControls
+    private readonly InputActionMap m_CharacterControls;
+    private ICharacterControlsActions m_CharacterControlsActionsCallbackInterface;
+    private readonly InputAction m_CharacterControls_Move;
+    private readonly InputAction m_CharacterControls_Run;
+    private readonly InputAction m_CharacterControls_Jump;
     public struct CharacterControlsActions
     {
-        private readonly PlayerInput m_Wrapper;
-
-        public CharacterControlsActions(PlayerInput wrapper)
-        {
-            m_Wrapper = wrapper;
-        }
-
-        public InputAction Move => m_Wrapper.m_CharacterControls_Move;
-        public InputAction Run => m_Wrapper.m_CharacterControls_Run;
-
-        public InputActionMap Get()
-        {
-            return m_Wrapper.m_CharacterControls;
-        }
-
-        public void Enable()
-        {
-            Get().Enable();
-        }
-
-        public void Disable()
-        {
-            Get().Disable();
-        }
-
+        private @PlayerInput m_Wrapper;
+        public CharacterControlsActions(@PlayerInput wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Move => m_Wrapper.m_CharacterControls_Move;
+        public InputAction @Run => m_Wrapper.m_CharacterControls_Run;
+        public InputAction @Jump => m_Wrapper.m_CharacterControls_Jump;
+        public InputActionMap Get() { return m_Wrapper.m_CharacterControls; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-
-        public static implicit operator InputActionMap(CharacterControlsActions set)
-        {
-            return set.Get();
-        }
-
+        public static implicit operator InputActionMap(CharacterControlsActions set) { return set.Get(); }
         public void SetCallbacks(ICharacterControlsActions instance)
         {
             if (m_Wrapper.m_CharacterControlsActionsCallbackInterface != null)
             {
-                Move.started -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnMove;
-                Move.performed -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnMove;
-                Move.canceled -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnMove;
-                Run.started -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnRun;
-                Run.performed -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnRun;
-                Run.canceled -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnRun;
+                @Move.started -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnMove;
+                @Move.performed -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnMove;
+                @Move.canceled -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnMove;
+                @Run.started -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnRun;
+                @Run.performed -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnRun;
+                @Run.canceled -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnRun;
+                @Jump.started -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnJump;
+                @Jump.performed -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnJump;
+                @Jump.canceled -= m_Wrapper.m_CharacterControlsActionsCallbackInterface.OnJump;
             }
-
             m_Wrapper.m_CharacterControlsActionsCallbackInterface = instance;
             if (instance != null)
             {
-                Move.started += instance.OnMove;
-                Move.performed += instance.OnMove;
-                Move.canceled += instance.OnMove;
-                Run.started += instance.OnRun;
-                Run.performed += instance.OnRun;
-                Run.canceled += instance.OnRun;
+                @Move.started += instance.OnMove;
+                @Move.performed += instance.OnMove;
+                @Move.canceled += instance.OnMove;
+                @Run.started += instance.OnRun;
+                @Run.performed += instance.OnRun;
+                @Run.canceled += instance.OnRun;
+                @Jump.started += instance.OnJump;
+                @Jump.performed += instance.OnJump;
+                @Jump.canceled += instance.OnJump;
             }
         }
     }
-
+    public CharacterControlsActions @CharacterControls => new CharacterControlsActions(this);
     public interface ICharacterControlsActions
     {
         void OnMove(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);
+        void OnJump(InputAction.CallbackContext context);
     }
 }

@@ -655,14 +655,14 @@
      <Reference Include="Unity.Timeline">
      <HintPath>/Users/voland/Documents/UnityProjects/CharacterControllers/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
      </Reference>
+     <Reference Include="Unity.VisualScripting.Core.Editor">
+     <HintPath>/Users/voland/Documents/UnityProjects/CharacterControllers/Library/ScriptAssemblies/Unity.VisualScripting.Core.Editor.dll</HintPath>
+     </Reference>
      <Reference Include="Unity.TextMeshPro">
      <HintPath>/Users/voland/Documents/UnityProjects/CharacterControllers/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
      </Reference>
      <Reference Include="Unity.VisualScripting.State.Editor">
      <HintPath>/Users/voland/Documents/UnityProjects/CharacterControllers/Library/ScriptAssemblies/Unity.VisualScripting.State.Editor.dll</HintPath>
-     </Reference>
-     <Reference Include="Unity.VisualScripting.Core.Editor">
-     <HintPath>/Users/voland/Documents/UnityProjects/CharacterControllers/Library/ScriptAssemblies/Unity.VisualScripting.Core.Editor.dll</HintPath>
      </Reference>
      <Reference Include="VSSettingsProvider">
      <HintPath>/Users/voland/Documents/UnityProjects/CharacterControllers/Library/ScriptAssemblies/VSSettingsProvider.dll</HintPath>
