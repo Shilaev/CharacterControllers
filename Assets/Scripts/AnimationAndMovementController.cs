@@ -1,28 +1,27 @@
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class AnimationAndMovementController : MonoBehaviour
 {
+    private readonly float _groundedGravity = -0.5f;
+    private readonly float _maxJumpHeight = 100f;
+    private readonly float _maxJumpTime = 50f;
+    private readonly float _rotationFactorPerFrame = 1.0f;
+    private readonly float _runMultiplier = 3f;
     private Animator _animator;
     private CharacterController _characterController;
     private Vector3 _currentMovement;
     private Vector2 _currentMovementInput;
     private Vector3 _currentRunMovement;
+    private float _gravity = -9.8f;
+    private float _initialJumpVelocity;
+    private bool _isJumping;
+    private bool _isJumpPressed;
     private bool _isMovementPressed;
     private int _isRunningHash;
     private bool _isRunPressed;
     private int _isWalkingHash;
     private PlayerInput _playerInput;
-    private float _rotationFactorPerFrame = 1.0f;
-    private float _runMultiplier = 3f;
-    private float _groundedGravity = -0.5f;
-    private float _gravity = -9.8f;
-    private bool _isJumpPressed = false;
-    private float _maxJumpHeight = 1.0f;
-    private float _maxJumpTime = 0.5f;
-    private float _initialJumpVelocity;
-    private bool _isJumping = false;
 
     private void Awake()
     {
@@ -48,32 +47,13 @@ public class AnimationAndMovementController : MonoBehaviour
         SetupJumpVariables();
     }
 
-    private void OnJump(InputAction.CallbackContext context)
-    {
-        _isJumpPressed = context.ReadValueAsButton();
-        Debug.Log(_isJumpPressed);
-    }
-
     private void Update()
     {
-        HandleRotation();
-        HandleAnimation();
-
-        if (_isRunPressed)
-            _characterController.Move(_currentRunMovement * Time.deltaTime);
-        else
-            _characterController.Move(_currentMovement * Time.deltaTime);
+        HandleMovement();
         HandleGravity();
         HandleJump();
     }
 
-    private void SetupJumpVariables()
-    {
-        float timeToApex = _maxJumpTime / 2;
-        _gravity = (-2 * _maxJumpHeight) / Mathf.Pow(timeToApex, 2);
-        _initialJumpVelocity = (2 * _maxJumpHeight) / timeToApex;
-    }
-    
     private void OnEnable()
     {
         _playerInput.CharacterControls.Enable();
@@ -84,28 +64,41 @@ public class AnimationAndMovementController : MonoBehaviour
         _playerInput.CharacterControls.Disable();
     }
 
+    private void OnJump(InputAction.CallbackContext context)
+    {
+        _isJumpPressed = context.ReadValueAsButton();
+        Debug.Log(_isJumpPressed);
+    }
+
+    private void HandleMovement()
+    {
+        HandleRotation();
+        HandleAnimation();
+        if (_isRunPressed)
+            _characterController.Move(_currentRunMovement * Time.deltaTime);
+        else
+            _characterController.Move(_currentMovement * Time.deltaTime);
+    }
+
+    private void SetupJumpVariables()
+    {
+        var timeToApex = _maxJumpTime / 2;
+        _gravity = -2 * _maxJumpHeight / Mathf.Pow(timeToApex, 2);
+        _initialJumpVelocity = 2 * _maxJumpHeight / timeToApex;
+    }
+
     private void HandleAnimation()
     {
         var isWalking = _animator.GetBool(_isWalkingHash);
         var isRunning = _animator.GetBool(_isRunningHash);
 
         if (_isMovementPressed && isWalking == false)
-        {
             _animator.SetBool(_isWalkingHash, true);
-        }
-        else if (_isMovementPressed == false && isWalking)
-        {
-            _animator.SetBool(_isWalkingHash, false);
-        }
+        else if (_isMovementPressed == false && isWalking) _animator.SetBool(_isWalkingHash, false);
 
-        if ((_isMovementPressed && _isRunPressed) && isRunning == false)
-        {
+        if (_isMovementPressed && _isRunPressed && isRunning == false)
             _animator.SetBool(_isRunningHash, true);
-        }
-        else if ((_isMovementPressed && _isRunPressed) == false && isRunning)
-        {
-            _animator.SetBool(_isRunningHash, false);
-        }
+        else if ((_isMovementPressed && _isRunPressed) == false && isRunning) _animator.SetBool(_isRunningHash, false);
     }
 
     private void HandleRotation()
@@ -116,12 +109,11 @@ public class AnimationAndMovementController : MonoBehaviour
         positionToLookAt.y = 0.0f;
         positionToLookAt.z = _currentMovement.z;
 
-        Quaternion currentRotation = transform.rotation;
-
+        var currentRotation = transform.rotation;
 
         if (_isMovementPressed)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
+            var targetRotation = Quaternion.LookRotation(positionToLookAt);
             transform.rotation = Quaternion.Slerp(currentRotation, targetRotation, _rotationFactorPerFrame);
         }
     }
@@ -146,7 +138,6 @@ public class AnimationAndMovementController : MonoBehaviour
         _currentMovement.x = _currentMovementInput.x;
         _currentMovement.z = _currentMovementInput.y;
 
-
         _currentRunMovement.x = _currentMovementInput.x * _runMultiplier;
         _currentRunMovement.z = _currentMovementInput.y * _runMultiplier;
 
@@ -165,6 +156,10 @@ public class AnimationAndMovementController : MonoBehaviour
             _isJumping = true;
             _currentMovement.y = _initialJumpVelocity;
             _currentRunMovement.y = _initialJumpVelocity;
+        }
+        else if (_isJumping && _isJumpPressed == false && _characterController.isGrounded)
+        {
+            _isJumping = false;
         }
     }
 }
