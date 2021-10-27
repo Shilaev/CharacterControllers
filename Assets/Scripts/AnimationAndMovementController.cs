@@ -4,8 +4,8 @@ using UnityEngine.InputSystem;
 public class AnimationAndMovementController : MonoBehaviour
 {
     private readonly float _groundedGravity = -0.5f;
-    private readonly float _maxJumpHeight = 100f;
-    private readonly float _maxJumpTime = 50f;
+    private readonly float _maxJumpHeight = 4f;
+    private readonly float _maxJumpTime = 0.75f;
     private readonly float _rotationFactorPerFrame = 1.0f;
     private readonly float _runMultiplier = 3f;
     private Animator _animator;
@@ -64,10 +64,11 @@ public class AnimationAndMovementController : MonoBehaviour
         _playerInput.CharacterControls.Disable();
     }
 
-    private void OnJump(InputAction.CallbackContext context)
+    private void SetupJumpVariables()
     {
-        _isJumpPressed = context.ReadValueAsButton();
-        Debug.Log(_isJumpPressed);
+        var timeToApex = _maxJumpTime / 2;
+        _gravity = -2 * _maxJumpHeight / Mathf.Pow(timeToApex, 2);
+        _initialJumpVelocity = 2 * _maxJumpHeight / timeToApex;
     }
 
     private void HandleMovement()
@@ -80,11 +81,18 @@ public class AnimationAndMovementController : MonoBehaviour
             _characterController.Move(_currentMovement * Time.deltaTime);
     }
 
-    private void SetupJumpVariables()
+    private void HandleJump()
     {
-        var timeToApex = _maxJumpTime / 2;
-        _gravity = -2 * _maxJumpHeight / Mathf.Pow(timeToApex, 2);
-        _initialJumpVelocity = 2 * _maxJumpHeight / timeToApex;
+        if (_isJumping == false && _characterController.isGrounded && _isJumpPressed)
+        {
+            _isJumping = true;
+            _currentMovement.y = _initialJumpVelocity;
+            _currentRunMovement.y = _initialJumpVelocity;
+        }
+        else if (_isJumping && _isJumpPressed == false && _characterController.isGrounded)
+        {
+            _isJumping = false;
+        }
     }
 
     private void HandleAnimation()
@@ -120,15 +128,28 @@ public class AnimationAndMovementController : MonoBehaviour
 
     private void HandleGravity()
     {
+        var isFalling = _currentMovement.y <= 0f || _isJumpPressed == false;
+        var fallMultiplier = 2f;
         if (_characterController.isGrounded)
         {
             _currentMovement.y = _groundedGravity;
             _currentRunMovement.y = _groundedGravity;
         }
+        else if (isFalling)
+        {
+            var previousYVelocity = _currentMovement.y;
+            var newYVelocity = _currentMovement.y + _gravity * fallMultiplier * Time.deltaTime;
+            var nextYvelocity = (previousYVelocity + newYVelocity) * .5f;
+            _currentMovement.y = nextYvelocity;
+            _currentRunMovement.y = nextYvelocity;
+        }
         else if (_characterController.isGrounded == false)
         {
-            _currentMovement.y += _gravity;
-            _currentRunMovement.y += _gravity;
+            var previousYVelocity = _currentMovement.y;
+            var newYVelocity = _currentMovement.y + _gravity * Time.deltaTime;
+            var nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
+            _currentMovement.y += nextYVelocity;
+            _currentRunMovement.y += nextYVelocity;
         }
     }
 
@@ -149,17 +170,9 @@ public class AnimationAndMovementController : MonoBehaviour
         _isRunPressed = context.ReadValueAsButton();
     }
 
-    private void HandleJump()
+    private void OnJump(InputAction.CallbackContext context)
     {
-        if (_isJumping == false && _characterController.isGrounded && _isJumpPressed)
-        {
-            _isJumping = true;
-            _currentMovement.y = _initialJumpVelocity;
-            _currentRunMovement.y = _initialJumpVelocity;
-        }
-        else if (_isJumping && _isJumpPressed == false && _characterController.isGrounded)
-        {
-            _isJumping = false;
-        }
+        _isJumpPressed = context.ReadValueAsButton();
+        Debug.Log(_isJumpPressed);
     }
 }
