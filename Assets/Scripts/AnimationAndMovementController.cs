@@ -128,20 +128,11 @@ public class AnimationAndMovementController : MonoBehaviour
 
     private void HandleGravity()
     {
-        var isFalling = _currentMovement.y <= 0f || _isJumpPressed == false;
         var fallMultiplier = 2f;
         if (_characterController.isGrounded)
         {
             _currentMovement.y = _groundedGravity;
             _currentRunMovement.y = _groundedGravity;
-        }
-        else if (isFalling)
-        {
-            var previousYVelocity = _currentMovement.y;
-            var newYVelocity = _currentMovement.y + _gravity * fallMultiplier * Time.deltaTime;
-            var nextYvelocity = (previousYVelocity + newYVelocity) * .5f;
-            _currentMovement.y = nextYvelocity;
-            _currentRunMovement.y = nextYvelocity;
         }
         else if (_characterController.isGrounded == false)
         {
